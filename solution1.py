@@ -1,30 +1,33 @@
-### **Exercise 1: Extracting and Cleaning Data from an API**
-import requests
 import pandas as pd
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, confusion_matrix
 
-cities = ["New York", "London", "Tokyo", "Paris", "Berlin"]
+# 1. Load the Wine dataset
+wine = load_wine()
+X = wine.data
+y = wine.target
 
-list = []
+# 2. Split the dataset into training and testing sets (80/20)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=30
+)
 
-for city in cities:
-    url = f"https://wttr.in/{city}?format=%C+%t"
-    response = requests.get(url)
-    weather_data = response.text.strip()
+# 3. Train a Naïve Bayes classifier
+model = GaussianNB()
+model.fit(X_train, y_train)
 
-    #rsplit - face split de la dreapta la stanga
-    strings = weather_data.rsplit(' ', 1)
-    weather_condition = strings[0].strip()
-    temperature = strings[1].strip()
+# 4. Predict on the test set
+y_pred = model.predict(X_test)
 
-    list.append({
-        'City': city,
-        'Temperature': temperature,
-        'Weather Condition': weather_condition
-    })
+# 5. Print out the accuracy
+accuracy = (y_pred == y_test).mean()
+print(f"Test Accuracy: {accuracy:.2f}")
 
-df = pd.DataFrame(list)
-
-df.to_csv('output_1.csv', index=False)
-
-print(df)
-
+# (Optional) Display the confusion matrix for deeper insight
+conf_matrix = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:")
+print(conf_matrix)
